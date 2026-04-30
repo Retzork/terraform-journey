@@ -1,0 +1,81 @@
+$ProgressPreference = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+Install-WindowsFeature -Name Web-Server
+
+$LogFile = "C:\inetpub\wwwroot\logs.txt"
+
+function Write-Log {
+    param([string]$Message)
+    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $LogEntry = "[$Timestamp] $Message"
+    Out-File -FilePath $LogFile -InputObject $LogEntry -Append -Encoding UTF8
+}
+
+Write-Log "Starting Domain Controller provisioning."
+
+try {
+    Write-Log "Installing AD-Domain-Services..."
+    Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+
+    Write-Log "Promoting server to Domain Controller..."
+    Import-Module ADDSDeployment
+    
+    Install-ADDSForest `
+    -CreateDnsDelegation:$false `
+    -DatabasePath "C:\Windows\NTDS" `
+    -DomainMode "WinThreshold" `
+    -DomainName "${domain_name}" `
+    -DomainNetbiosName "CORP" `
+    -ForestMode "WinThreshold" `
+    -InstallDns:$true `
+    -LogPath "C:\Windows\NTDS" `
+    -NoRebootOnCompletion:$false `
+    -SysvolPath "C:\Windows\SYSVOL" `
+    -SafeModeAdministratorPassword (convertto-securestring "${admin_password}" -asplaintext -force) `
+    -Force:$true
+
+    Write-Log "Domain Controller promotion successful. System will reboot."
+} catch {
+    $ErrorMessage = $_.Exception.Message
+    Write-Log "FATAL ERROR: $ErrorMessage"
+    exit 1
+}
+
+# Service Account Creation Logic
+Import-Module ActiveDirectory
+
+$SecurePassword = ConvertTo-SecureString "${service_account_password}" -AsPlainText -Force
+$DomainSuffix = "${domain_name}"
+
+# SQL Server Database Engine Service Account
+New-ADUser -Name "svc_sqlengine" `
+    -SamAccountName "svc_sqlengine" `
+    -UserPrincipalName "svc_sqlengine@$DomainSuffix" `
+    -AccountPassword $SecurePassword `
+    -Enabled $true `
+    -PasswordNeverExpires $true `
+    -CannotChangePassword $true `
+    -Description "SQL Server Database Engine Service Account"
+
+# SQL Server Agent Service Account
+New-ADUser -Name "svc_sqlagent" `
+    -SamAccountName "svc_sqlagent" `
+    -UserPrincipalName "svc_sqlagent@$DomainSuffix" `
+    -AccountPassword $SecurePassword `
+    -Enabled $true `
+    -PasswordNeverExpires $true `
+    -CannotChangePassword $true `
+    -Description "SQL Server Agent Service Account"
+
+# Dynamics GP Service Account
+New-ADUser -Name "svc_gpservice" `
+    -SamAccountName "svc_gpservice" `
+    -UserPrincipalName "svc_gpservice@$DomainSuffix" `
+    -AccountPassword $SecurePassword `
+    -Enabled $true `
+    -PasswordNeverExpires $true `
+    -CannotChangePassword $true `
+    -Description "Dynamics GP Service Account"
+
+Write-Log "Service accounts created successfully."

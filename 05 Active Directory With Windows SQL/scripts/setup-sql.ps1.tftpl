@@ -1,0 +1,30 @@
+Start-Transcript -Path "C:\sql-transcript.txt" -Force
+try {
+    $D = "${domain_name}"
+    $P = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("${service_account_password_b64}"))
+    
+    # Configure Mixed Mode
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQLServer" -Name "LoginMode" -Value 2
+    
+    # Firewall
+    New-NetFirewallRule -DisplayName "SQL" -Direction Inbound -LocalPort 1433 -Protocol TCP -Action Allow -ErrorAction SilentlyContinue | Out-Null
+    
+    # Assign Service Accounts directly to the OS Service Control Manager
+    $EngineSvc = "$D\svc_sqlengine"
+    $AgentSvc = "$D\svc_sqlagent"
+    
+    # Grant 'Log on as a service' (SeServiceLogonRight) via ntrights or manual assignment isn't 
+    # needed if the service is set via sc.exe, but we force the credential update here.
+    & sc.exe config MSSQLSERVER obj= "$EngineSvc" password= "$P"
+    & sc.exe config SQLSERVERAGENT obj= "$AgentSvc" password= "$P"
+    
+    # Restart to apply
+    Restart-Service MSSQLSERVER -Force
+    Restart-Service SQLSERVERAGENT -Force -ErrorAction SilentlyContinue
+}
+catch {
+    $_ | Out-File "C:\sql-err.txt"
+    Stop-Transcript
+    exit 1
+}
+Stop-Transcript

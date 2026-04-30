@@ -1,0 +1,154 @@
+#cloud-config
+package_update: true
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - python3
+
+write_files:
+  - path: /etc/prometheus/prometheus.yml
+    content: |
+      global:
+        scrape_interval: 15s
+      scrape_configs:
+        - job_name: 'azure_windows_vms'
+          azure_sd_configs:
+            - environment: AzurePublicCloud
+              authentication_method: ManagedIdentity
+              subscription_id: '${subscription_id}'
+              resource_group: '${resource_group}'
+              port: 9182
+          relabel_configs:
+            - source_labels: [__meta_azure_machine_os_type]
+              action: keep
+              regex: Windows
+
+  - path: /etc/grafana/provisioning/datasources/prometheus.yml
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          uid: DS_PROMETHEUS
+          url: http://prometheus:9090
+          isDefault: true
+          editable: true
+
+  - path: /etc/grafana/provisioning/dashboards/provider.yml
+    content: |
+      apiVersion: 1
+      providers:
+        - name: 'Default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards
+
+  - path: /tmp/dashboard_raw.json
+    content: |
+      ${indent(6, dashboard_json)}
+
+runcmd:
+  - curl -fsSL https://get.docker.com -o get-docker.sh
+  - sh get-docker.sh
+  - mkdir -p /var/lib/grafana/dashboards
+  
+  - |
+    python3 -c "
+    import json, os
+    try:
+        with open('/tmp/dashboard_raw.json', 'r') as f:
+            raw_data = json.load(f)
+        
+        data = raw_data['dashboard'] if 'dashboard' in raw_data else raw_data
+        
+        if 'elements' in data:
+            panels = []
+            
+            layout_map = {}
+            if 'layout' in data and 'spec' in data['layout']:
+                for item in data['layout']['spec'].get('items', []):
+                    if item.get('kind') == 'GridLayoutItem':
+                        el = item.get('spec', {}).get('element', {})
+                        if el.get('kind') == 'ElementReference':
+                            layout_map[el['name']] = {
+                                'h': item['spec']['height'],
+                                'w': item['spec']['width'],
+                                'x': item['spec']['x'],
+                                'y': item['spec']['y']
+                            }
+
+            for name, element in data['elements'].items():
+                if element.get('kind') == 'Panel':
+                    p_spec = element.get('spec', {})
+                    
+                    panel = {
+                        'id': p_spec.get('id', len(panels) + 1),
+                        'title': p_spec.get('title', name),
+                        'description': p_spec.get('description', ''),
+                        'links': p_spec.get('links', [])
+                    }
+                    
+                    if 'vizConfig' in p_spec:
+                        viz = p_spec['vizConfig']
+                        panel['type'] = viz.get('group', 'timeseries') 
+                        v_spec = viz.get('spec', {})
+                        if 'options' in v_spec:
+                            panel['options'] = v_spec['options']
+                        if 'fieldConfig' in v_spec:
+                            panel['fieldConfig'] = v_spec['fieldConfig']
+
+                    if 'data' in p_spec and 'spec' in p_spec['data']:
+                        d_spec = p_spec['data']['spec']
+                        panel['targets'] = []
+                        for q in d_spec.get('queries', []):
+                            q_inner = q.get('spec', {}).get('query', {}).get('spec', {})
+                            if not q_inner: 
+                                q_inner = q.get('spec', {})
+                            
+                            if q_inner:
+                                q_inner['refId'] = q.get('spec', {}).get('refId', 'A')
+                                q_inner['datasource'] = {'type': 'prometheus', 'uid': 'DS_PROMETHEUS'}
+                                panel['targets'].append(q_inner)
+                        
+                        if 'transformations' in d_spec:
+                            panel['transformations'] = []
+                            for t in d_spec.get('transformations', []):
+                                t_id = t.get('group')
+                                t_options = t.get('spec', {}).get('options', {})
+                                if t_id:
+                                    panel['transformations'].append({
+                                        'id': t_id,
+                                        'options': t_options
+                                    })
+
+                    panel['datasource'] = {'type': 'prometheus', 'uid': 'DS_PROMETHEUS'}
+                    if name in layout_map:
+                        panel['gridPos'] = layout_map[name]
+                    
+                    panels.append(panel)
+            
+            data['panels'] = panels
+            del data['elements']
+            if 'layout' in data: del data['layout']
+        
+        data['schemaVersion'] = 39
+        data['uid'] = 'windows-monitoring'
+        
+        with open('/var/lib/grafana/dashboards/windows_metrics.json', 'w') as f:
+            json.dump(data, f)
+    except Exception as e:
+        with open('/var/lib/grafana/dashboards/error.log', 'w') as f:
+            f.write(str(e))
+    "
+
+  - chown -R 472:472 /var/lib/grafana
+  - docker network create monitoring
+  - [ docker, run, -d, --name, prometheus, --network, monitoring, -p, "9090:9090", -v, "/etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml", prom/prometheus ]
+  - [ docker, run, -d, --name, grafana, --network, monitoring, -e, "GF_SECURITY_ADMIN_USER=${grafana_admin_user}", -e, "GF_SECURITY_ADMIN_PASSWORD=${grafana_admin_password}", -p, "3000:3000", -v, "/etc/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources", -v, "/etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards", -v, "/var/lib/grafana/dashboards:/var/lib/grafana/dashboards", -v, "/var/lib/grafana:/var/lib/grafana", grafana/grafana ]

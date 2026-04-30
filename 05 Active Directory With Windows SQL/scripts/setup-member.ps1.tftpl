@@ -1,0 +1,53 @@
+$ProgressPreference = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+$DomainName = "${domain_name}"
+$Password = "${admin_password}" | ConvertTo-SecureString -AsPlainText -Force
+$Username = "$DomainName\${admin_username}"
+$Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+
+# Polling mechanism to wait for DC readiness
+$DomainReady = $false
+$RetryCount = 0
+$MaxRetries = 90 # 90 attempts * 20 seconds = 30 minutes maximum wait time
+$LogFile = "C:\join-log.txt"
+
+function Write-Log {
+    param([string]$Message)
+    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Out-File -FilePath $LogFile -InputObject "[$Timestamp] $Message" -Append -Encoding UTF8
+}
+
+Write-Log "Beginning domain join sequence. Waiting for $DomainName to become reachable..."
+
+while (-not $DomainReady -and $RetryCount -lt $MaxRetries) {
+    try {
+        # Attempt to resolve the domain name against the explicit DC IP
+        $DnsCheck = Resolve-DnsName -Name $DomainName -Server "10.0.1.4" -ErrorAction Stop
+        if ($DnsCheck) {
+            $DomainReady = $true
+            Write-Log "Domain $DomainName successfully resolved. Proceeding with join."
+        }
+    }
+    catch {
+        $RetryCount++
+        Write-Log "Attempt $RetryCount : Domain not reachable yet. Sleeping for 20 seconds."
+        Start-Sleep -Seconds 20
+    }
+}
+
+if (-not $DomainReady) {
+    Write-Log "FATAL ERROR: Timed out waiting for domain controller."
+    exit 1
+}
+
+# Execute domain join
+try {
+    Write-Log "Executing Add-Computer cmdlet..."
+    Add-Computer -DomainName $DomainName -Credential $Credential -Options JoinWithNewName, AccountCreate -Force -Restart
+}
+catch {
+    $ErrorMessage = $_.Exception.Message
+    Write-Log "FATAL ERROR during Add-Computer: $ErrorMessage"
+    exit 1
+}
