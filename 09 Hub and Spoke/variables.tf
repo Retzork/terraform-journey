@@ -4,10 +4,9 @@ variable "location" {
   default     = "southeastasia"
 }
 
-variable "resource_group_name" {
-  type        = string
-  description = "Name of the resource group."
-  default     = "rg-enterprise-networking-sea"
+variable "rg_name" {
+  type    = string
+  default = "rg-hubspoke-lab-sea"
 }
 
 variable "hub_vnet_cidr" {
@@ -23,4 +22,13 @@ variable "spoke_a_vnet_cidr" {
 variable "spoke_b_vnet_cidr" {
   type    = list(string)
   default = ["10.2.0.0/16"]
+}
+
+variable "admin_username" {
+  type    = string
+}
+
+variable "admin_password" {
+  type      = string
+  sensitive = true
 }
