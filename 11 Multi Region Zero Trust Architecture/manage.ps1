@@ -11,7 +11,6 @@ $Phases = @(
     "phase4_routing",
     "phase5_governance"
 )
-
 if ($Action -eq "destroy") {
     [array]::Reverse($Phases)
 }

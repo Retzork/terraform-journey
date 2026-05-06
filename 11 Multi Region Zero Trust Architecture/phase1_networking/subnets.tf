@@ -50,3 +50,11 @@ resource "azurerm_subnet" "hub_ea_fw_mgmt" {
   virtual_network_name = azurerm_virtual_network.hub_ea.name
   address_prefixes     = ["10.2.3.0/24"]
 }
+
+# Management Subnet in SEA Hub
+resource "azurerm_subnet" "hub_sea_mgmt" {
+  name                 = "snet-mgmt-sea"
+  resource_group_name  = azurerm_resource_group.hub_sea.name
+  virtual_network_name = azurerm_virtual_network.hub_sea.name
+  address_prefixes     = ["10.0.4.0/24"]
+}
