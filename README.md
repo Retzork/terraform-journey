@@ -30,7 +30,7 @@ To deploy the configurations in this repository, you will need:
   An extension of the AD environment that automatically provisions and joins a SQL Server 2019 instance to the domain, configuring necessary service accounts.
 
 * **[07 Dashboard to Existing Environment](./07%20Dashboard%20to%20Existing%20Environment)**
-  An observability stack deploying a Linux Ubuntu monitoring hub (Prometheus and Grafana). Designed to inject into an existing Virtual Network to monitor the performance (CPU, RAM, response time) of Windows nodes.
+  An observability stack deploying a Linux Ubuntu monitoring hub (Prometheus and Grafana). Designed to inject into an existing Virtual Network to monitor the performance (CPU, RAM, response time, uptime) of Windows nodes.
 
 * **[08 Dummy](./08%20Dummy)**
   Dynamic provisioning of basic Windows Server Virtual Machines. Frequently used as target nodes to test the monitoring capabilities of Project 07.
@@ -42,9 +42,6 @@ To deploy the configurations in this repository, you will need:
   Deployment of an AKS cluster tailored for production patterns. Includes Azure CNI networking, Cluster Autoscaler, Entra ID integration, NGINX Ingress via Helm, and Horizontal Pod Autoscaler (HPA) configurations.
 
 *(Note: Project 06 is intentionally omitted as it contained deprecated dependencies.)*
-
-## Future Roadmap
-The current repository strictly targets the Azure ecosystem. Future updates will introduce multi-cloud architectures, adding similar infrastructure deployments for **AWS** and **Aliyun (Alibaba Cloud)**.
 
 ## Usage
 Each folder contains its own `README.md` with specific variables, setup instructions, and deployment nuances. Navigate to the target project directory and follow the standard Terraform workflow:
