@@ -1,39 +1,41 @@
 # Azure Active Directory Virtual Network Template
+
 ```mermaid
-graph TB
-    subgraph RG["Resource Group: ActiveDirectoryEnvironmentRG<br/>Region: Indonesia Central"]
-        subgraph VNET["VNet: 10.0.0.0/16<br/>Custom DNS: 10.0.1.4 (DC)"]
-            subgraph SUBNET["Subnet: 10.0.1.0/24"]
-                DC["🖥️ dc-01<br/>Windows Server 2022<br/>Static IP: 10.0.1.4<br/>AD DS + DNS"]
-                M1["🖥️ member-01"]
-                M2["🖥️ member-02"]
-                M3["🖥️ member-03"]
-                M4["🖥️ member-04"]
+flowchart TB
+    Internet((Internet))
+
+    subgraph RG["ActiveDirectoryEnvironmentRG"]
+        PIP["Public IP\ndc-pip"]
+        NSG["NSG: dc-nsg\nAllow TCP 80"]
+
+        subgraph VNET["VNet 10.0.0.0/16 — Custom DNS: 10.0.1.4"]
+            subgraph SUBNET["Subnet 10.0.1.0/24"]
+                DC["DC-01\nWindows Server 2022\nIP: 10.0.1.4\nAD DS + DNS"]
+                M1["member-01"]
+                M2["member-02"]
+                M3["member-03"]
+                M4["member-04"]
             end
         end
-        NSG["🛡️ NSG<br/>Allow: HTTP 80"]
-        PIP["🌐 Public IP<br/>(DC only)"]
     end
 
-    Internet((Internet)) --> PIP
-    PIP --> DC
-    NSG -.-> DC
+    Internet --> PIP --> DC
+    NSG -.- DC
 
-    DC -->|"1. Promote to DC<br/>Install AD DS"| DC
-    M1 -->|"2. Poll DNS until DC ready<br/>then Domain Join"| DC
-    M2 -->|"2. Poll DNS until DC ready<br/>then Domain Join"| DC
-    M3 -->|"2. Poll DNS until DC ready<br/>then Domain Join"| DC
-    M4 -->|"2. Poll DNS until DC ready<br/>then Domain Join"| DC
+    DC -- "Step 1: Install AD DS\nPromote to Forest Root" --> DC
 
-    classDef dc fill:#4a90d9,stroke:#2c5f8a,color:#fff
-    classDef member fill:#7fb3d3,stroke:#4a90d9,color:#fff
-    classDef security fill:#e74c3c,stroke:#c0392b,color:#fff
-    classDef network fill:#f39c12,stroke:#d68910,color:#fff
+    M1 -- "Step 2: Poll DC via DNS\nthen Domain Join" --> DC
+    M2 -- "Step 2" --> DC
+    M3 -- "Step 2" --> DC
+    M4 -- "Step 2" --> DC
 
-    class DC dc
-    class M1,M2,M3,M4 member
-    class NSG security
-    class PIP network
+    style DC fill:#2563eb,color:#fff,stroke:#1d4ed8
+    style M1 fill:#60a5fa,color:#fff,stroke:#3b82f6
+    style M2 fill:#60a5fa,color:#fff,stroke:#3b82f6
+    style M3 fill:#60a5fa,color:#fff,stroke:#3b82f6
+    style M4 fill:#60a5fa,color:#fff,stroke:#3b82f6
+    style NSG fill:#ef4444,color:#fff,stroke:#dc2626
+    style PIP fill:#f59e0b,color:#fff,stroke:#d97706
 ```
 
 ## Project Overview

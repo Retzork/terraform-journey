@@ -1,62 +1,47 @@
 # Azure Enterprise Hub-and-Spoke Network Topology
 
 ```mermaid
-graph TB
-    subgraph INTERNET["Internet"]
-        USER((User))
+flowchart TB
+    Internet((Internet))
+
+    subgraph HUB["Hub VNet 10.0.0.0/16"]
+        FW["Azure Firewall\nStandard SKU\nIP: 10.0.0.4"]
+        GW["GatewaySubnet\nReserved"]
     end
 
-    subgraph RG["Resource Group: rg-hubspoke-lab-sea<br/>Region: Southeast Asia"]
-        subgraph HUB["Hub VNet: 10.0.0.0/16"]
-            subgraph FWSUBNET["AzureFirewallSubnet: 10.0.0.0/26"]
-                FW["🔥 Azure Firewall<br/>Standard SKU<br/>IP: 10.0.0.4"]
-            end
-            subgraph GWSUBNET["GatewaySubnet: 10.0.0.32/27"]
-                GW["🔌 Reserved for<br/>VPN/ExpressRoute"]
-            end
-        end
-
-        subgraph SPOKEA["Spoke A VNet (Prod): 10.1.0.0/16"]
-            subgraph SNETA["snet-workload-a: 10.1.1.0/24"]
-                VMA["🐧 VM-A<br/>Ubuntu 22.04"]
-            end
-            RTA["📋 UDR: 0.0.0.0/0<br/>→ 10.0.0.4"]
-        end
-
-        subgraph SPOKEB["Spoke B VNet (Dev): 10.2.0.0/16"]
-            subgraph SNETB["snet-workload-b: 10.2.1.0/24"]
-                VMB["🐧 VM-B<br/>Ubuntu 22.04"]
-            end
-            RTB["📋 UDR: 0.0.0.0/0<br/>→ 10.0.0.4"]
-        end
+    subgraph SPOKEA["Spoke A — Prod 10.1.0.0/16"]
+        VMA["VM-A\nUbuntu 22.04\n10.1.1.x"]
+        RTA["UDR: 0.0.0.0/0 → 10.0.0.4"]
     end
 
-    %% Peering
-    HUB <-->|"VNet Peering<br/>allow_forwarded_traffic"| SPOKEA
-    HUB <-->|"VNet Peering<br/>allow_forwarded_traffic"| SPOKEB
-
-    %% Traffic flows
-    VMA -->|"All traffic"| FW
-    VMB -->|"All traffic"| FW
-    FW -->|"Allowed: *.ubuntu.com<br/>Blocked: everything else"| INTERNET
-    FW <-->|"ICMP + SSH<br/>between spokes"| FW
-
-    %% Firewall Rules
-    subgraph RULES["Firewall Policy"]
-        NR["Network Rules<br/>✅ ICMP: Spoke A ↔ Spoke B<br/>✅ SSH: Spoke A ↔ Spoke B"]
-        AR["App Rules<br/>✅ *.ubuntu.com (HTTP/S)<br/>❌ All other FQDNs"]
+    subgraph SPOKEB["Spoke B — Dev 10.2.0.0/16"]
+        VMB["VM-B\nUbuntu 22.04\n10.2.1.x"]
+        RTB["UDR: 0.0.0.0/0 → 10.0.0.4"]
     end
-    FW --- RULES
 
-    classDef firewall fill:#e74c3c,stroke:#c0392b,color:#fff
-    classDef vm fill:#27ae60,stroke:#1e8449,color:#fff
-    classDef route fill:#f39c12,stroke:#d68910,color:#000
-    classDef rules fill:#8e44ad,stroke:#6c3483,color:#fff
+    subgraph FWPOLICY["Firewall Policy — Default Deny"]
+        direction LR
+        L4["Layer 4\nICMP + SSH\nSpoke A ↔ Spoke B"]
+        L7["Layer 7\n*.ubuntu.com ✓\nAll others ✗"]
+    end
 
-    class FW firewall
-    class VMA,VMB vm
-    class RTA,RTB route
-    class NR,AR rules
+    HUB <-->|"Peering\nallow_forwarded_traffic"| SPOKEA
+    HUB <-->|"Peering\nallow_forwarded_traffic"| SPOKEB
+
+    VMA -->|"All egress"| FW
+    VMB -->|"All egress"| FW
+    FW -->|"Filtered"| Internet
+    FW --- FWPOLICY
+
+    VMA <-.->|"Inter-spoke\nvia Firewall"| VMB
+
+    style FW fill:#e74c3c,color:#fff,stroke:#c0392b
+    style VMA fill:#27ae60,color:#fff,stroke:#1e8449
+    style VMB fill:#27ae60,color:#fff,stroke:#1e8449
+    style RTA fill:#f39c12,color:#000,stroke:#d68910
+    style RTB fill:#f39c12,color:#000,stroke:#d68910
+    style L4 fill:#8e44ad,color:#fff,stroke:#6c3483
+    style L7 fill:#8e44ad,color:#fff,stroke:#6c3483
 ```
 
 ## Project Overview

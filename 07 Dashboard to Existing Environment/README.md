@@ -1,54 +1,46 @@
 # Azure Windows VM Monitoring Stack
 
 ```mermaid
-graph LR
-    subgraph AZURE["Azure Subscription"]
-        subgraph HUBVM["Hub VM (Ubuntu 24.04)"]
-            subgraph DOCKER["Docker Containers"]
-                PROM["📊 Prometheus<br/>:9090<br/>Azure SD"]
-                GRAF["📈 Grafana<br/>:3000<br/>Auto-provisioned"]
-            end
-            PYTHON["🐍 Python Sanitizer<br/>Converts Grafana v2 → Classic"]
-        end
+flowchart LR
+    Admin((Admin\nBrowser))
 
-        subgraph TARGETS["Target Windows VMs"]
-            W1["🖥️ Windows VM 1<br/>windows_exporter :9182"]
-            W2["🖥️ Windows VM 2<br/>windows_exporter :9182"]
-            W3["🖥️ Windows VM N<br/>windows_exporter :9182"]
-        end
-
-        MI["🔑 Managed Identity<br/>Reader Role"]
-        ARM["☁️ Azure Resource Manager<br/>Service Discovery"]
+    subgraph HUB["Hub VM — Ubuntu 24.04"]
+        direction TB
+        PROM["Prometheus :9090\nAzure Service Discovery"]
+        GRAF["Grafana :3000\nAuto-provisioned Dashboard"]
+        SANITIZER["Python Sanitizer\nv2 Schema → Classic"]
     end
 
-    ADMIN((Admin<br/>Browser)) -->|"HTTPS :3000"| GRAF
-    GRAF -->|"Query"| PROM
+    subgraph TARGETS["Target Windows VMs"]
+        direction TB
+        W1["VM-1\nwindows_exporter :9182"]
+        W2["VM-2\nwindows_exporter :9182"]
+        W3["VM-N\nwindows_exporter :9182"]
+    end
+
+    subgraph AZURE["Azure Control Plane"]
+        MI["Managed Identity\nReader Role"]
+        ARM["Azure Resource Manager\nVM Discovery"]
+    end
+
+    Admin -->|":3000"| GRAF
+    GRAF --> PROM
+    SANITIZER -.-> GRAF
+
     PROM -->|"Scrape :9182"| W1
     PROM -->|"Scrape :9182"| W2
     PROM -->|"Scrape :9182"| W3
-    PROM -->|"Discover VMs"| ARM
-    MI -.->|"Authenticates"| ARM
-    HUBVM -.->|"Assigned"| MI
 
-    PYTHON -->|"Sanitize JSON"| GRAF
+    PROM -->|"List VMs"| ARM
+    MI -.->|"Auth"| ARM
+    HUB -.-> MI
 
-    subgraph METRICS["Collected Metrics"]
-        CPU["CPU Usage"]
-        MEM["Memory"]
-        DISK["Disk I/O"]
-        NET["Network"]
-    end
-    W1 --- METRICS
-
-    classDef prometheus fill:#e6522c,stroke:#b8421f,color:#fff
-    classDef grafana fill:#f46800,stroke:#c25400,color:#fff
-    classDef windows fill:#0078d4,stroke:#005a9e,color:#fff
-    classDef identity fill:#7b2d8b,stroke:#5a1f66,color:#fff
-
-    class PROM prometheus
-    class GRAF grafana
-    class W1,W2,W3 windows
-    class MI identity
+    style PROM fill:#e6522c,color:#fff,stroke:#b8421f
+    style GRAF fill:#f46800,color:#fff,stroke:#c25400
+    style W1 fill:#0078d4,color:#fff,stroke:#005a9e
+    style W2 fill:#0078d4,color:#fff,stroke:#005a9e
+    style W3 fill:#0078d4,color:#fff,stroke:#005a9e
+    style MI fill:#7b2d8b,color:#fff,stroke:#5a1f66
 ```
 
 ## Overview

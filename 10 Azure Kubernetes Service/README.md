@@ -1,66 +1,51 @@
 # Project Documentation: Enterprise AKS Deployment (Southeast Asia)
 
 ```mermaid
-graph TB
-    subgraph AZURE["Azure Subscription — Southeast Asia"]
-        subgraph VNET["VNet: 10.0.0.0/16"]
-            subgraph AKSSUBNET["AKS Subnet: 10.0.0.0/22 (Azure CNI)"]
-                subgraph CLUSTER["AKS Cluster"]
-                    subgraph SYSPOOL["System Node Pool (VMSS)<br/>Standard_DS2_v2<br/>Autoscaler: 1-5 nodes"]
-                        N1["Node 1"]
-                        N2["Node 2"]
-                        N3["Node N..."]
-                    end
+flowchart TB
+    User((User))
 
-                    subgraph WORKLOADS["Workloads"]
-                        subgraph FRONTEND["Frontend Pods"]
-                            FE1["🌐 NGINX<br/>CPU: 100m-250m<br/>RAM: 128-256Mi"]
-                            FE2["🌐 NGINX<br/>Replica"]
-                        end
-                        subgraph BACKEND["Backend Pods"]
-                            BE1["💾 Redis<br/>CPU: 100m-250m<br/>RAM: 128-256Mi"]
-                        end
-                    end
+    subgraph AKS["AKS Cluster — Azure CNI"]
+        direction TB
+        INGRESS["NGINX Ingress Controller\nHelm Deployed"]
 
-                    INGRESS["📥 NGINX Ingress Controller<br/>(Helm)"]
-                    HPA["📏 HPA<br/>Target: 50% CPU<br/>Min: 1 / Max: 10"]
-                end
-            end
+        subgraph PODS["Application Pods"]
+            FE1["Frontend\nNGINX"]
+            FE2["Frontend\nReplica"]
+            BE["Backend\nRedis"]
         end
 
-        LB["⚖️ Azure Standard<br/>Load Balancer<br/>+ Public IP"]
-        ENTRA["🔐 Microsoft Entra ID<br/>Azure RBAC<br/>Workload Identity"]
+        HPA["HPA\nTarget: 50% CPU\nScale: 1–10 pods"]
     end
 
-    USER((User)) -->|"HTTP/HTTPS"| LB
+    subgraph INFRA["Azure Infrastructure"]
+        LB["Standard Load Balancer\n+ Public IP"]
+        VMSS["Node Pool (VMSS)\nStandard_DS2_v2\nAutoscaler: 1–5 nodes"]
+        ENTRA["Microsoft Entra ID\nAzure RBAC\nWorkload Identity"]
+    end
+
+    subgraph NETWORK["VNet 10.0.0.0/16"]
+        SUBNET["AKS Subnet 10.0.0.0/22\n1024 IPs — Direct Pod IPs"]
+    end
+
+    User -->|"HTTP/S"| LB
     LB --> INGRESS
-    INGRESS -->|"Route: /"| FE1
-    INGRESS -->|"Route: /"| FE2
-    FE1 --> BE1
-    FE2 --> BE1
+    INGRESS --> FE1
+    INGRESS --> FE2
+    FE1 --> BE
+    FE2 --> BE
 
-    HPA -->|"Scale pods<br/>on CPU > 50%"| FRONTEND
-    SYSPOOL -->|"Cluster Autoscaler<br/>Scale nodes on<br/>Pending pods"| N3
+    HPA -.->|"Scale pods"| PODS
+    VMSS -.->|"Scale nodes\non Pending pods"| AKS
+    AKS -.->|"OIDC"| ENTRA
+    AKS --- SUBNET
 
-    CLUSTER -.->|"OIDC + Workload Identity"| ENTRA
-
-    subgraph SCALING["Two-Tier Scaling"]
-        direction LR
-        POD_SCALE["Pod Layer (HPA)<br/>desiredReplicas = ⌈current × (actual/target)⌉"]
-        NODE_SCALE["Node Layer (CA)<br/>Trigger: Pending pods<br/>Cooldown: 10 min"]
-    end
-
-    classDef ingress fill:#009688,stroke:#00695c,color:#fff
-    classDef frontend fill:#2196f3,stroke:#1565c0,color:#fff
-    classDef backend fill:#ff5722,stroke:#bf360c,color:#fff
-    classDef lb fill:#ff9800,stroke:#e65100,color:#fff
-    classDef identity fill:#9c27b0,stroke:#6a1b9a,color:#fff
-
-    class INGRESS ingress
-    class FE1,FE2 frontend
-    class BE1 backend
-    class LB lb
-    class ENTRA identity
+    style INGRESS fill:#009688,color:#fff,stroke:#00695c
+    style FE1 fill:#2196f3,color:#fff,stroke:#1565c0
+    style FE2 fill:#2196f3,color:#fff,stroke:#1565c0
+    style BE fill:#ff5722,color:#fff,stroke:#bf360c
+    style LB fill:#ff9800,color:#fff,stroke:#e65100
+    style ENTRA fill:#9c27b0,color:#fff,stroke:#6a1b9a
+    style HPA fill:#4caf50,color:#fff,stroke:#2e7d32
 ```
 
 ## 1. Executive Summary
