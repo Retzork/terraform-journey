@@ -1,47 +1,5 @@
 # Azure Windows VM Monitoring Stack
-
-```mermaid
-flowchart LR
-    Admin((Admin\nBrowser))
-
-    subgraph HUB["Hub VM — Ubuntu 24.04"]
-        direction TB
-        PROM["Prometheus :9090\nAzure Service Discovery"]
-        GRAF["Grafana :3000\nAuto-provisioned Dashboard"]
-        SANITIZER["Python Sanitizer\nv2 Schema → Classic"]
-    end
-
-    subgraph TARGETS["Target Windows VMs"]
-        direction TB
-        W1["VM-1\nwindows_exporter :9182"]
-        W2["VM-2\nwindows_exporter :9182"]
-        W3["VM-N\nwindows_exporter :9182"]
-    end
-
-    subgraph AZURE["Azure Control Plane"]
-        MI["Managed Identity\nReader Role"]
-        ARM["Azure Resource Manager\nVM Discovery"]
-    end
-
-    Admin -->|":3000"| GRAF
-    GRAF --> PROM
-    SANITIZER -.-> GRAF
-
-    PROM -->|"Scrape :9182"| W1
-    PROM -->|"Scrape :9182"| W2
-    PROM -->|"Scrape :9182"| W3
-
-    PROM -->|"List VMs"| ARM
-    MI -.->|"Auth"| ARM
-    HUB -.-> MI
-
-    style PROM fill:#e6522c,color:#fff,stroke:#b8421f
-    style GRAF fill:#f46800,color:#fff,stroke:#c25400
-    style W1 fill:#0078d4,color:#fff,stroke:#005a9e
-    style W2 fill:#0078d4,color:#fff,stroke:#005a9e
-    style W3 fill:#0078d4,color:#fff,stroke:#005a9e
-    style MI fill:#7b2d8b,color:#fff,stroke:#5a1f66
-```
+![Active Directory Infrastructure](diagram.drawio.svg)
 
 ## Overview
 This repository contains a Terraform deployment for an automated observability stack on Azure. It provisions a central Linux Hub Virtual Machine running Prometheus and Grafana within Docker containers. The stack automatically discovers and monitors Azure Windows Virtual Machines using Azure Service Discovery and the Prometheus Windows Exporter.
