@@ -1,5 +1,5 @@
 # Azure Active Directory Virtual Network Template
-![Architecture](./diagram.drawio.svg)
+![Active Directory Infrastructure](diagram.drawio.svg)
 ```mermaid
 flowchart TB
     Internet((Internet))
