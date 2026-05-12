@@ -1,5 +1,64 @@
 # Azure Enterprise Hub-and-Spoke Network Topology
 
+```mermaid
+graph TB
+    subgraph INTERNET["Internet"]
+        USER((User))
+    end
+
+    subgraph RG["Resource Group: rg-hubspoke-lab-sea<br/>Region: Southeast Asia"]
+        subgraph HUB["Hub VNet: 10.0.0.0/16"]
+            subgraph FWSUBNET["AzureFirewallSubnet: 10.0.0.0/26"]
+                FW["🔥 Azure Firewall<br/>Standard SKU<br/>IP: 10.0.0.4"]
+            end
+            subgraph GWSUBNET["GatewaySubnet: 10.0.0.32/27"]
+                GW["🔌 Reserved for<br/>VPN/ExpressRoute"]
+            end
+        end
+
+        subgraph SPOKEA["Spoke A VNet (Prod): 10.1.0.0/16"]
+            subgraph SNETA["snet-workload-a: 10.1.1.0/24"]
+                VMA["🐧 VM-A<br/>Ubuntu 22.04"]
+            end
+            RTA["📋 UDR: 0.0.0.0/0<br/>→ 10.0.0.4"]
+        end
+
+        subgraph SPOKEB["Spoke B VNet (Dev): 10.2.0.0/16"]
+            subgraph SNETB["snet-workload-b: 10.2.1.0/24"]
+                VMB["🐧 VM-B<br/>Ubuntu 22.04"]
+            end
+            RTB["📋 UDR: 0.0.0.0/0<br/>→ 10.0.0.4"]
+        end
+    end
+
+    %% Peering
+    HUB <-->|"VNet Peering<br/>allow_forwarded_traffic"| SPOKEA
+    HUB <-->|"VNet Peering<br/>allow_forwarded_traffic"| SPOKEB
+
+    %% Traffic flows
+    VMA -->|"All traffic"| FW
+    VMB -->|"All traffic"| FW
+    FW -->|"Allowed: *.ubuntu.com<br/>Blocked: everything else"| INTERNET
+    FW <-->|"ICMP + SSH<br/>between spokes"| FW
+
+    %% Firewall Rules
+    subgraph RULES["Firewall Policy"]
+        NR["Network Rules<br/>✅ ICMP: Spoke A ↔ Spoke B<br/>✅ SSH: Spoke A ↔ Spoke B"]
+        AR["App Rules<br/>✅ *.ubuntu.com (HTTP/S)<br/>❌ All other FQDNs"]
+    end
+    FW --- RULES
+
+    classDef firewall fill:#e74c3c,stroke:#c0392b,color:#fff
+    classDef vm fill:#27ae60,stroke:#1e8449,color:#fff
+    classDef route fill:#f39c12,stroke:#d68910,color:#000
+    classDef rules fill:#8e44ad,stroke:#6c3483,color:#fff
+
+    class FW firewall
+    class VMA,VMB vm
+    class RTA,RTB route
+    class NR,AR rules
+```
+
 ## Project Overview
 This project demonstrates the implementation of a secure, scalable Hub-and-Spoke network architecture within Microsoft Azure using Terraform. The primary objective is to centralize security governance and traffic inspection via a managed Azure Firewall, ensuring that all cross-spoke and egress traffic is strictly controlled through User Defined Routes (UDRs).
 
