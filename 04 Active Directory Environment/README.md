@@ -1,29 +1,28 @@
 # Azure Active Directory Virtual Network Template
 ```mermaid
 graph TB
-    subgraph RG["Resource Group: ActiveDirectoryEnvironmentRG<br/>Region: Indonesia Central"]
-        subgraph VNET["VNet: 10.0.0.0/16<br/>Custom DNS: 10.0.1.4 (DC)"]
-            subgraph SUBNET["Subnet: 10.0.1.0/24"]
-                DC["🖥️ dc-01<br/>Windows Server 2022<br/>Static IP: 10.0.1.4<br/>AD DS + DNS"]
-                M1["🖥️ member-01"]
-                M2["🖥️ member-02"]
-                M3["🖥️ member-03"]
-                M4["🖥️ member-04"]
+    subgraph RG["Resource Group: var.resource_group_name <br/>Location: var.location "]
+        subgraph VNET["VNet: 10.0.0.0/16 <br/>DNS Servers: 10.0.1.4 "]
+            subgraph SUBNET["Subnet: 10.0.1.0/24 "]
+                DC["🖥️ dc-01 [cite: 34]<br/>Static IP: 10.0.1.4 [cite: 33]<br/>Roles: AD DS, DNS, Web-Server "]
+                
+                subgraph MEMBERS["Member VMs "]
+                    M_COUNT["🖥️ member-01...member-0N <br/>Count: var.domain_member_count <br/>NIC DNS: 10.0.1.4 "]
+                end
             end
         end
-        NSG["🛡️ NSG<br/>Allow: HTTP 80"]
-        PIP["🌐 Public IP<br/>(DC only)"]
+        
+        NSG["🛡️ NSG: dc-nsg [cite: 30]<br/>Allow: TCP 80 (HTTP) [cite: 31]"]
+        PIP["🌐 Public IP: dc-pip [cite: 29]<br/>SKU: Standard (Static) [cite: 29]"]
     end
 
     Internet((Internet)) --> PIP
     PIP --> DC
-    NSG -.-> DC
+    NSG -->|"Associated with dc-nic "| DC
 
-    DC -->|"1. Promote to DC<br/>Install AD DS"| DC
-    M1 -->|"2. Poll DNS until DC ready<br/>then Domain Join"| DC
-    M2 -->|"2. Poll DNS until DC ready<br/>then Domain Join"| DC
-    M3 -->|"2. Poll DNS until DC ready<br/>then Domain Join"| DC
-    M4 -->|"2. Poll DNS until DC ready<br/>then Domain Join"| DC
+    DC -->|"1. Install Web-Server & AD DS <br/>2. Promote to Forest Root [cite: 45]"| DC
+    
+    M_COUNT -->|"3. Poll 10.0.1.4 for DNS resolution [cite: 50, 51]<br/>4. Execute Domain Join [cite: 52]"| DC
 
     classDef dc fill:#4a90d9,stroke:#2c5f8a,color:#fff
     classDef member fill:#7fb3d3,stroke:#4a90d9,color:#fff
@@ -31,7 +30,7 @@ graph TB
     classDef network fill:#f39c12,stroke:#d68910,color:#fff
 
     class DC dc
-    class M1,M2,M3,M4 member
+    class M_COUNT member
     class NSG security
     class PIP network
 ```
