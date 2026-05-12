@@ -1,42 +1,5 @@
 # Azure Active Directory Virtual Network Template
 ![Active Directory Infrastructure](diagram.drawio.svg)
-```mermaid
-flowchart TB
-    Internet((Internet))
-
-    subgraph RG["ActiveDirectoryEnvironmentRG"]
-        PIP["Public IP\ndc-pip"]
-        NSG["NSG: dc-nsg\nAllow TCP 80"]
-
-        subgraph VNET["VNet 10.0.0.0/16 — Custom DNS: 10.0.1.4"]
-            subgraph SUBNET["Subnet 10.0.1.0/24"]
-                DC["DC-01\nWindows Server 2022\nIP: 10.0.1.4\nAD DS + DNS"]
-                M1["member-01"]
-                M2["member-02"]
-                M3["member-03"]
-                M4["member-04"]
-            end
-        end
-    end
-
-    Internet --> PIP --> DC
-    NSG -.- DC
-
-    DC -- "Step 1: Install AD DS\nPromote to Forest Root" --> DC
-
-    M1 -- "Step 2: Poll DC via DNS\nthen Domain Join" --> DC
-    M2 -- "Step 2" --> DC
-    M3 -- "Step 2" --> DC
-    M4 -- "Step 2" --> DC
-
-    style DC fill:#2563eb,color:#fff,stroke:#1d4ed8
-    style M1 fill:#60a5fa,color:#fff,stroke:#3b82f6
-    style M2 fill:#60a5fa,color:#fff,stroke:#3b82f6
-    style M3 fill:#60a5fa,color:#fff,stroke:#3b82f6
-    style M4 fill:#60a5fa,color:#fff,stroke:#3b82f6
-    style NSG fill:#ef4444,color:#fff,stroke:#dc2626
-    style PIP fill:#f59e0b,color:#fff,stroke:#d97706
-```
 
 ## Project Overview
 This project provisions an Azure Virtual Network (VNet) pre-configured with a Windows Server 2022 Active Directory Domain Controller and a customizable number of domain-joined member Virtual Machines. 
