@@ -50,6 +50,23 @@ resource "azurerm_linux_virtual_machine" "jumpbox" {
     sku       = "22_04-lts"
     version   = "latest"
   }
+  custom_data = base64encode(<<-EOF
+    #!/bin/bash
+    set -e
+
+    # Install Azure CLI
+    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+    # Install kubectl
+    K8S_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt)
+    sudo curl -LO "https://dl.k8s.io/release/$K8S_VERSION/bin/linux/amd64/kubectl"
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+    # Configure kubectl bash completion for the azureuser
+    echo 'source <(kubectl completion bash)' >> /home/azureuser/.bashrc
+    chown azureuser:azureuser /home/azureuser/.bashrc
+    EOF
+  )
 }
 
 # Network Security Group for Jumpbox
@@ -66,7 +83,7 @@ resource "azurerm_network_security_group" "jumpbox_nsg" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = "*" # Recommendation: Change to your local Public IP for better security
+    source_address_prefix      = var.allowed_ssh_cidr
     destination_address_prefix = "*"
   }
 }

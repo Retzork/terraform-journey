@@ -8,8 +8,7 @@ $Phases = @(
     "phase1_networking",
     "phase2_data",
     "phase3_compute",
-    "phase4_routing",
-    "phase5_governance"
+    "phase4_final"
 )
 if ($Action -eq "destroy") {
     [array]::Reverse($Phases)

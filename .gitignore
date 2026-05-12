@@ -26,3 +26,4 @@ terraform.rc
 # ignore deprecated project das sad asda
 06\ Whole\ Dynamics\ GP\ Environment/
 *.zip
+*.txt
