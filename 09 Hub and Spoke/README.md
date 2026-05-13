@@ -1,48 +1,6 @@
 # Azure Enterprise Hub-and-Spoke Network Topology
 
-```mermaid
-flowchart TB
-    Internet((Internet))
-
-    subgraph HUB["Hub VNet 10.0.0.0/16"]
-        FW["Azure Firewall\nStandard SKU\nIP: 10.0.0.4"]
-        GW["GatewaySubnet\nReserved"]
-    end
-
-    subgraph SPOKEA["Spoke A — Prod 10.1.0.0/16"]
-        VMA["VM-A\nUbuntu 22.04\n10.1.1.x"]
-        RTA["UDR: 0.0.0.0/0 → 10.0.0.4"]
-    end
-
-    subgraph SPOKEB["Spoke B — Dev 10.2.0.0/16"]
-        VMB["VM-B\nUbuntu 22.04\n10.2.1.x"]
-        RTB["UDR: 0.0.0.0/0 → 10.0.0.4"]
-    end
-
-    subgraph FWPOLICY["Firewall Policy — Default Deny"]
-        direction LR
-        L4["Layer 4\nICMP + SSH\nSpoke A ↔ Spoke B"]
-        L7["Layer 7\n*.ubuntu.com ✓\nAll others ✗"]
-    end
-
-    HUB <-->|"Peering\nallow_forwarded_traffic"| SPOKEA
-    HUB <-->|"Peering\nallow_forwarded_traffic"| SPOKEB
-
-    VMA -->|"All egress"| FW
-    VMB -->|"All egress"| FW
-    FW -->|"Filtered"| Internet
-    FW --- FWPOLICY
-
-    VMA <-.->|"Inter-spoke\nvia Firewall"| VMB
-
-    style FW fill:#e74c3c,color:#fff,stroke:#c0392b
-    style VMA fill:#27ae60,color:#fff,stroke:#1e8449
-    style VMB fill:#27ae60,color:#fff,stroke:#1e8449
-    style RTA fill:#f39c12,color:#000,stroke:#d68910
-    style RTB fill:#f39c12,color:#000,stroke:#d68910
-    style L4 fill:#8e44ad,color:#fff,stroke:#6c3483
-    style L7 fill:#8e44ad,color:#fff,stroke:#6c3483
-```
+![Active Directory Infrastructure](diagram.drawio.svg)
 
 ## Project Overview
 This project demonstrates the implementation of a secure, scalable Hub-and-Spoke network architecture within Microsoft Azure using Terraform. The primary objective is to centralize security governance and traffic inspection via a managed Azure Firewall, ensuring that all cross-spoke and egress traffic is strictly controlled through User Defined Routes (UDRs).
