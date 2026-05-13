@@ -1,52 +1,6 @@
 # Project Documentation: Enterprise AKS Deployment (Southeast Asia)
 
-```mermaid
-flowchart TB
-    User((User))
-
-    subgraph AKS["AKS Cluster — Azure CNI"]
-        direction TB
-        INGRESS["NGINX Ingress Controller\nHelm Deployed"]
-
-        subgraph PODS["Application Pods"]
-            FE1["Frontend\nNGINX"]
-            FE2["Frontend\nReplica"]
-            BE["Backend\nRedis"]
-        end
-
-        HPA["HPA\nTarget: 50% CPU\nScale: 1–10 pods"]
-    end
-
-    subgraph INFRA["Azure Infrastructure"]
-        LB["Standard Load Balancer\n+ Public IP"]
-        VMSS["Node Pool (VMSS)\nStandard_DS2_v2\nAutoscaler: 1–5 nodes"]
-        ENTRA["Microsoft Entra ID\nAzure RBAC\nWorkload Identity"]
-    end
-
-    subgraph NETWORK["VNet 10.0.0.0/16"]
-        SUBNET["AKS Subnet 10.0.0.0/22\n1024 IPs — Direct Pod IPs"]
-    end
-
-    User -->|"HTTP/S"| LB
-    LB --> INGRESS
-    INGRESS --> FE1
-    INGRESS --> FE2
-    FE1 --> BE
-    FE2 --> BE
-
-    HPA -.->|"Scale pods"| PODS
-    VMSS -.->|"Scale nodes\non Pending pods"| AKS
-    AKS -.->|"OIDC"| ENTRA
-    AKS --- SUBNET
-
-    style INGRESS fill:#009688,color:#fff,stroke:#00695c
-    style FE1 fill:#2196f3,color:#fff,stroke:#1565c0
-    style FE2 fill:#2196f3,color:#fff,stroke:#1565c0
-    style BE fill:#ff5722,color:#fff,stroke:#bf360c
-    style LB fill:#ff9800,color:#fff,stroke:#e65100
-    style ENTRA fill:#9c27b0,color:#fff,stroke:#6a1b9a
-    style HPA fill:#4caf50,color:#fff,stroke:#2e7d32
-```
+![Active Directory Infrastructure](diagram.drawio.svg)
 
 ## 1. Executive Summary
 This project involved the automated provisioning of a production-grade Azure Kubernetes Service (AKS) cluster using Terraform. The architecture implements Azure CNI for networking, Entra ID (Azure AD) for identity management, and a two-dimensional scaling model to ensure application elasticity and cost-efficiency.
@@ -61,7 +15,7 @@ The network layer utilizes the **Azure CNI (Container Networking Interface)** pl
 *   **VNet Address Space:** 10.0.0.0/16
 *   **AKS Subnet:** 10.0.0.0/22 (1,024 IP addresses)
 *   **Service CIDR:** 10.1.0.0/16
-*   **DNS Service IP:** 10.1.0.10
+*   **DNS Service IP:** 10.1.0.10        
 
 **Comparison of IP Consumption:**
 
