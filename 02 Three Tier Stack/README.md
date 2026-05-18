@@ -72,3 +72,16 @@ Run the following commands to manage the infrastructure:
 ## Notes / Common Issues
 * **Provisioning Delay:** The custom data scripts (`FirstLogonCommands`) execute when the VMs boot. It will take several minutes after `terraform apply` finishes for the web server, application, and database to be fully configured and returning data. Monitor the `/logs/` endpoints to track progress.
 * **Security Limitation (Internal Traffic):** While the NSGs successfully restrict traffic flows to the correct subnets, the internal communication between the Web/App tiers (HTTP over 8080) and App/DB tiers (SQL over 1433) is currently unencrypted. This is suitable for a template or proof-of-concept, but production environments should enforce HTTPS and encrypted SQL connections.
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | Virtual Machines, Virtual Network, Subnets, NSGs, Public IP |
+| **Compute** | Windows Server 2022, IIS, ASP.NET, SQL Server 2022 |
+| **Networking** | Subnet isolation, NSG inbound/outbound rules, tiered traffic flow |
+| **Automation** | Custom Script Extensions, PowerShell provisioning, HTTP-based log aggregation |
+| **IaC** | Terraform (AzureRM provider), multi-resource dependency management |
+| **Pattern** | Classic three-tier architecture (Web → App → DB) with network segmentation |
+| **Demonstrates** | Subnet-level security, automated Windows provisioning, end-to-end connectivity validation |

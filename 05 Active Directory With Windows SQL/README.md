@@ -82,3 +82,17 @@ Run the following commands to manage the infrastructure:
 * **Provisioning Time:** The Domain Controller takes several minutes to promote and reboot. Member and SQL VMs are configured to wait/poll for the DC to become reachable before attempting to join the domain.
 * **Security:** The default Network Security Group (NSG) only explicitly allows inbound HTTP (port 80). RDP (port 3389) is commented out and blocked from the public internet by default.
 * **Credentials:** Ensure passwords meet Windows Server complexity requirements to prevent script execution failures during provisioning.
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | Virtual Machines, Virtual Network, Custom DNS, NSG, VM Extensions |
+| **Identity** | AD DS, domain join via Azure VM Extension (JsonADDomainExtension), service accounts |
+| **Compute** | Windows Server 2022, SQL Server 2019, dynamic member VMs |
+| **Database** | SQL Server Mixed Mode auth, AD service account assignment, firewall port configuration |
+| **Automation** | Custom Script Extensions, PowerShell templates, Azure VM Extensions for domain join |
+| **IaC** | Terraform (AzureRM), multi-VM orchestration, sensitive variable handling |
+| **Pattern** | Enterprise AD + SQL environment with automated domain integration |
+| **Demonstrates** | SQL Server in AD-joined environment, service account management, complex multi-VM dependency chains |

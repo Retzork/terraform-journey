@@ -179,3 +179,20 @@ Run the following commands to manage the infrastructure:
 * **Failover Test Limitation:** Disabling an origin in Front Door will result in 504 if the remaining origin has no backend pods responding. The `trigger-ilb` service is a dummy service (selector: `app: dummy`) used solely to provision the internal load balancer for Private Link Service attachment. Real failover requires application pods deployed behind the ILB.
 * **DNS Resolution from AKS Pods:** The SQL private DNS zone is linked to all four VNets (hubs + spokes), ensuring pods can resolve `*.privatelink.database.windows.net` to private IPs.
 * **Deployment Time:** Full deployment takes approximately 30-45 minutes. The majority of time is spent on Azure Firewall provisioning (~15 min each) and AKS cluster creation (~10 min each).
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | AKS (private), Azure Firewall (Basic), Front Door Premium, WAF, Private Link, SQL Database, Private Endpoints, Private DNS Zones, Azure Policy, VNet Peering (global) |
+| **Networking** | Multi-region hub-spoke, forced tunneling, Private Link Service, global VNet peering, route tables |
+| **Security** | Zero Trust (no public workload exposure), WAF (Prevention mode), Azure Policy (deny public IPs), NSG, Private Endpoints |
+| **Data** | Azure SQL Failover Groups (auto-failover), private endpoint connectivity, cross-region replication |
+| **Identity** | Workload Identity, Managed Identity, RBAC |
+| **Global Ingress** | Front Door Premium with Private Link origins, health probes, WAF rules (OWASP + Bot) |
+| **Compute** | Private AKS clusters (2 regions), Jumpbox VM, Internal Load Balancers |
+| **Automation** | PowerShell orchestration script (manage.ps1), null_resource provisioners, automated PE approval |
+| **IaC** | Terraform (AzureRM), 4-phase deployment, cross-phase state references, data sources |
+| **Pattern** | Multi-region Zero Trust with private workloads, global load balancing, and automated failover |
+| **Demonstrates** | Enterprise-grade multi-region architecture, Azure Firewall + Front Door + Private Link integration, SQL geo-replication, Azure Policy enforcement, phased Terraform orchestration |

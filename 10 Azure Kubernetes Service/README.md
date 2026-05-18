@@ -90,3 +90,18 @@ The CA manages the infrastructure layer (the nodes):
 
 ### 6.3 Infrastructure Cleanup
 `terraform destroy -auto-approve`
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | AKS, Virtual Network, Load Balancer (Standard), Managed Identity, Entra ID |
+| **Kubernetes** | Azure CNI networking, HPA (Horizontal Pod Autoscaler), Cluster Autoscaler, NGINX Ingress |
+| **Identity** | Entra ID RBAC integration, OIDC Issuer, Workload Identity, System-Assigned Managed Identity |
+| **Networking** | Azure CNI (pod-level VNet IPs), Service CIDR, DNS configuration |
+| **Scaling** | Two-tier: HPA (pod-level) + Cluster Autoscaler (node-level) |
+| **Deployment** | Helm provider (NGINX Ingress Controller), Kubernetes manifests |
+| **IaC** | Terraform (AzureRM + Helm + Kubernetes providers), multi-phase deployment |
+| **Pattern** | Production AKS with identity-based security and auto-scaling |
+| **Demonstrates** | Container orchestration on Azure, Entra ID integration, resource governance (requests/limits), Helm-based infrastructure deployment, two-dimensional scaling |

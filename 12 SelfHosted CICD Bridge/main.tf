@@ -5,12 +5,8 @@ terraform {
       version = "~> 3.0"
     }
   }
-  backend "azurerm" {
-    resource_group_name  = "rg-cicd-bridge"
-    storage_account_name = "arthatfstatecicdbrg2026"
-    container_name       = "tfstate"
-    key                  = "terraform.tfstate"
-  }
+  # Platform layer uses LOCAL state — only managed from developer machine.
+  # The remote backend (Azure Storage) is for the APPLICATION layer (pipeline).
 }
 
 provider "azurerm" {

@@ -55,3 +55,15 @@ Run the following commands to manage the infrastructure:
 * Only the first Virtual Machine receives a public IP address. Subsequent VMs rely strictly on private IP addresses.
 * Variable descriptions in `variables.tf` contain a copy-paste error referencing Linux, but the deployed instances are Windows Server 2022. 
 * The `admin_password` variable is marked as sensitive and will be hidden from Terraform console outputs.
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | Virtual Machines, Virtual Network, NSG, Public IP, Managed Disks |
+| **Compute** | Windows Server 2022 Datacenter (Azure Edition Core), dynamic VM count |
+| **Networking** | Subnet design, conditional public IP assignment |
+| **IaC** | Terraform (AzureRM), count-based scaling, conditional resource creation |
+| **Pattern** | Dynamic target environment for monitoring/testing |
+| **Demonstrates** | Scalable VM fleet provisioning, conditional logic in Terraform |

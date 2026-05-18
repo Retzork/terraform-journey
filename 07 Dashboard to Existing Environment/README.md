@@ -74,3 +74,17 @@ sudo docker ps -a
 sudo docker logs prometheus
 sudo docker logs grafana
 ```
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | Virtual Machines (Linux), Managed Identity, Role Assignments (Reader), NSG, Public IP |
+| **Observability** | Prometheus (Azure SD), Grafana (auto-provisioned dashboards), Windows Exporter |
+| **Compute** | Ubuntu 24.04 LTS, Docker containers, cloud-init |
+| **Identity** | User-Assigned Managed Identity for Azure Service Discovery (no secrets) |
+| **Automation** | cloud-init (YAML template), Python JSON sanitizer, Custom Script Extensions on targets |
+| **IaC** | Terraform (AzureRM), templatefile(), remote provisioning of existing VMs |
+| **Pattern** | Centralized monitoring hub with agentless Azure VM discovery |
+| **Demonstrates** | Observability-as-Code, Managed Identity for service discovery, Docker on Azure VMs, cross-resource-group provisioning |

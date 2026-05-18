@@ -76,3 +76,17 @@ Run the following commands to provision and manage the infrastructure:
 * **Provisioning Time:** The Domain Controller requires several minutes to install AD DS and perform the required reboots. Member VMs are coded to pause and poll the DC until DNS resolution succeeds.
 * **Password Complexity:** Ensure `admin_password` meets Active Directory complexity requirements; otherwise, the automatic domain promotion and join scripts will silently fail.
 * **Access:** RDP (port 3389) is explicitly commented out in the Network Security Group. Remote management must be done via internal networking or by manually modifying the NSG rules.
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | Virtual Machines, Virtual Network, Custom DNS, NSG, Public IP |
+| **Identity** | Active Directory Domain Services (AD DS), Domain Controller promotion, automated domain join |
+| **Compute** | Windows Server 2022, dynamic VM count (domain members) |
+| **Networking** | VNet with custom DNS pointing to DC, subnet design |
+| **Automation** | Custom Script Extensions, PowerShell templates (tftpl), boot-time dependency polling |
+| **IaC** | Terraform (AzureRM), count-based dynamic resources, templatefile() |
+| **Pattern** | Automated AD forest deployment with scalable domain-joined members |
+| **Demonstrates** | Complex provisioning sequencing (DC must promote before members join), Windows infrastructure automation, enterprise identity patterns |

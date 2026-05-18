@@ -75,3 +75,16 @@ Run the following commands to manage the infrastructure:
 ## Notes / Common Issues
 * Database Security Limitation: The Node.js database configuration in the Application Tier explicitly sets `encrypt: false`. Users must be aware that this results in unencrypted internal traffic between the App and DB tiers. Production environments must enforce encrypted SQL connections.
 * Startup Timing: The custom script extensions contain bounded wait loops. The App and DB tiers will repeatedly poll the Web tier until the logging receiver is active before proceeding with their own installations.
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | Virtual Machines, Virtual Network, Subnets, NSGs, Public IP |
+| **Compute** | Windows Server 2022, Nginx (reverse proxy), Node.js Express API, SQL Server 2022 |
+| **Networking** | Subnet isolation, port-level NSG rules (80, 3000, 1433), tiered traffic flow |
+| **Automation** | Custom Script Extensions, PowerShell, Node.js service configuration |
+| **IaC** | Terraform (AzureRM provider), templatefile() for dynamic scripts |
+| **Pattern** | API-driven three-tier (Nginx → Express REST API → SQL Server) |
+| **Demonstrates** | Modern API architecture on Azure VMs, cross-tier HTTP communication, automated provisioning with dependency ordering |

@@ -70,3 +70,17 @@ Validation of Layer 7 filtering from Spoke A:
 * **Least Privilege:** Only required ports and FQDNs are exposed.
 * **Centralized Egress:** Eliminates the need for Public IPs on workload VMs, reducing the attack surface.
 * **Stateful Inspection:** Ensures that only initiated sessions receive return traffic.
+
+
+## Tools & Skills
+
+| Category | Details |
+|----------|---------|
+| **Azure Services** | Azure Firewall (Standard), Virtual Networks, VNet Peering, Route Tables (UDR), NSG |
+| **Networking** | Hub-and-spoke topology, forced tunneling, centralized egress, FQDN filtering |
+| **Security** | Default-deny firewall policy, Layer 4 (network) + Layer 7 (application) rules, stateful inspection |
+| **Compute** | Ubuntu 22.04 LTS (spoke workloads) |
+| **Routing** | User Defined Routes overriding system routes, next-hop Virtual Appliance |
+| **IaC** | Terraform (AzureRM), multi-phase deployment, cross-resource dependencies |
+| **Pattern** | Enterprise hub-and-spoke with centralized security inspection |
+| **Demonstrates** | Azure Firewall configuration, VNet peering with transit, UDR-based traffic steering, Layer 7 FQDN filtering, inter-spoke communication via firewall |

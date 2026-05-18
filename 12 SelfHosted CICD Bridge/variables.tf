@@ -41,24 +41,13 @@ variable "admin_password" {
 
 variable "storage_account_name" {
   type        = string
-  description = "Globally unique name for the storage account"
-  default     = "arthatfstatecicdbrg2026" # Must be updated to a globally unique value
+  description = "Globally unique name for the storage account (used as remote backend by pipeline)"
+  default     = "arthatfstatecicdbrg2026"
 }
 
 variable "container_name" {
   type    = string
   default = "tfstate"
-}
-
-variable "app_service_plan_name" {
-  type    = string
-  default = "asp-cicd-bridge"
-}
-
-variable "web_app_name" {
-  type        = string
-  description = "Must be globally unique"
-  default     = "app-cicd-bridge-2026-artha"
 }
 
 variable "github_owner" {
@@ -73,6 +62,6 @@ variable "github_repo" {
 
 variable "github_pat" {
   type        = string
-  description = "GitHub Personal Access Token with 'repo' scope"
+  description = "GitHub Personal Access Token with 'Administration: Read & Write' permission"
   sensitive   = true
 }

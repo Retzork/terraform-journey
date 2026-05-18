@@ -1,5 +1,5 @@
 resource "azurerm_service_plan" "asp" {
-  name                = var.app_service_plan_name
+  name                = "asp-cicd-bridge"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   os_type             = "Linux"
@@ -7,7 +7,7 @@ resource "azurerm_service_plan" "asp" {
 }
 
 resource "azurerm_linux_web_app" "app" {
-  name                = var.web_app_name
+  name                = "app-cicd-bridge-2026-artha"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.asp.id

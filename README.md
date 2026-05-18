@@ -5,11 +5,20 @@ This repository contains a collection of Infrastructure-as-Code (IaC) projects b
 
 While developed as an educational sandbox, the templates are structured to provide a solid baseline for professional environments. **Important Note:** If adapting these modules for production use, thoroughly review and harden the security configurations. Some projects intentionally disable encryption or utilize permissive Network Security Groups (NSGs) for ease of testing.
 
-## Global Prerequisites
-* **Terraform:** >= 1.0 with AzureRM provider ~> 3.0
-* **Azure CLI:** Installed and authenticated (`az login`)
-* **Azure Subscription:** Sufficient permissions to deploy networking, compute, and Kubernetes resources
-* **Region:** Projects target `southeastasia` by default
+## Azure Skills Demonstrated
+
+| Domain | Services & Concepts |
+|--------|-------------------|
+| **Networking** | VNet, Subnets, NSG, VNet Peering (regional + global), UDR, Forced Tunneling, Azure CNI, Private Endpoints, Private Link Service, Private DNS Zones |
+| **Security** | Azure Firewall (Standard + Basic), WAF, Azure Policy, Zero Trust, Managed Identity (User + System Assigned), RBAC, Entra ID integration |
+| **Compute** | Virtual Machines (Windows + Linux), VMSS, AKS (private clusters), App Service, Docker, Custom Script Extensions, cloud-init |
+| **Data** | SQL Server (IaaS), Azure SQL Database, Failover Groups, geo-replication, Private Endpoints for data |
+| **Identity** | Active Directory DS, Domain Controllers, domain join automation, Entra ID, Workload Identity, OIDC |
+| **Containers** | AKS, Azure CNI, HPA, Cluster Autoscaler, Helm, NGINX Ingress, Internal Load Balancers |
+| **Observability** | Prometheus, Grafana, Azure Service Discovery, Windows Exporter, dashboard-as-code |
+| **Global Traffic** | Azure Front Door Premium, Private Link origins, health probes, multi-region failover |
+| **CI/CD** | GitHub Actions, Self-Hosted Runners, Managed Identity auth (IMDS), zip deploy |
+| **IaC Patterns** | Multi-phase deployment, cross-state references, templatefile(), count/for_each, lifecycle rules, remote + local backends |
 
 ## Project Directory
 
@@ -26,10 +35,11 @@ While developed as an educational sandbox, the templates are structured to provi
 | 09 | [Hub and Spoke](./09%20Hub%20and%20Spoke) | Enterprise hub-and-spoke with Azure Firewall + UDRs + centralized inspection |
 | 10 | [Azure Kubernetes Service](./10%20Azure%20Kubernetes%20Service) | Production AKS: Azure CNI, Entra ID, HPA, Cluster Autoscaler, Helm Ingress |
 | 11 | [Multi Region Zero Trust Architecture](./11%20Multi%20Region%20Zero%20Trust%20Architecture) | Multi-region hub-spoke with private AKS, Front Door, WAF, Private Link, SQL Failover |
+| 12 | [Self-Hosted CI/CD Bridge](./12%20SelfHosted%20CICD%20Bridge) | GitHub Actions → Azure via Managed Identity, zero secrets, self-hosted runner |
 
 ## Highlighted Projects
 
-Five projects are highlighted as the portfolio showcase. Each was selected because it demonstrates a distinct, non-overlapping skill that builds on the previous:
+Six projects are highlighted as the portfolio showcase. Each was selected because it demonstrates a distinct, non-overlapping skill that builds on the previous:
 
 | # | Project | Why It's Highlighted |
 |---|---------|---------------------|
@@ -38,6 +48,7 @@ Five projects are highlighted as the portfolio showcase. Each was selected becau
 | 09 | Hub and Spoke | Core enterprise networking pattern. Proves understanding of VNet peering, Azure Firewall as a centralized inspection point, User Defined Routes, and Layer 4/7 traffic filtering with default-deny posture. |
 | 10 | AKS | Container orchestration with production patterns: Azure CNI networking, Entra ID RBAC, Workload Identity, two-tier autoscaling (HPA + Cluster Autoscaler), and Helm-based ingress deployment. |
 | 11 | Zero Trust | The capstone. Multi-region, multi-phase orchestration combining everything: hub-spoke networking, private AKS clusters, Azure Firewall, Front Door Premium with Private Link origins, WAF, SQL Failover Groups, Azure Policy enforcement, and automated PE connection approval. |
+| 12 | CI/CD Bridge | Solves a real enterprise constraint: deploying to Azure without Entra ID permissions. Self-hosted GitHub Actions runner with Managed Identity authentication (IMDS). Zero secrets stored anywhere. |
 
 The remaining projects (01–03, 05, 06, 08) are either superseded by later work, too generic (every tutorial covers three-tier), or serve as utility/support for the highlighted ones.
 
@@ -52,6 +63,7 @@ Realistic durations based on actual deployment runs. Azure Firewall and AKS clus
 | 09 Hub and Spoke | ~20 min | ~15 min | Azure Firewall Standard provisioning / deallocation |
 | 10 AKS | ~12 min | ~5 min | AKS cluster creation |
 | 11 Zero Trust | ~45 min | ~60 min | 2× Firewalls + 2× AKS clusters + Front Door + DNS zone links |
+| 12 CI/CD Bridge | ~5 min | ~2 min | VM creation + Storage Account provisioning |
 
 **Project 11 phase breakdown:**
 
@@ -114,6 +126,15 @@ All prices are approximate USD pay-as-you-go rates for the Southeast Asia region
 | Private Endpoints | — | 2 | $0.010 |
 | Public IPs | Standard Static | 6 | $0.030 |
 
+**Project 12 — Self-Hosted CI/CD Bridge (~$1/day if left running)**
+
+| Resource | SKU | Qty | $/hour |
+|----------|-----|-----|--------|
+| Runner VM (Linux) | Standard_B2s_v2 | 1 | $0.042 |
+| App Service Plan | B1 Linux | 1 | $0.018 |
+| Storage Account | Standard LRS | 1 | ~$0.001 |
+| VNet/NSG/Identity | — | — | Free |
+
 ### Summary
 
 | Project | Daily Cost | Monthly Cost | Biggest Cost Driver |
@@ -123,10 +144,11 @@ All prices are approximate USD pay-as-you-go rates for the Southeast Asia region
 | 09 Hub and Spoke | ~$31/day | ~$935/mo | Azure Firewall Standard (97% of cost) |
 | 10 AKS | ~$4/day | ~$111/mo | Node VM (DS2_v2) |
 | 11 Zero Trust | ~$29/day | ~$1,212/mo | Firewalls (53%) + Front Door (27%) |
+| 12 CI/CD Bridge | ~$1/day | ~$28/mo | Runner VM (58%) + App Service (42%) |
 
 ### Cost Optimization Tips
 
-1. **Deploy → Validate → Destroy** — Keep resources up only during testing. All 5 projects can be demoed for under $4 total.
+1. **Deploy → Validate → Destroy** — Keep resources up only during testing. All 6 highlighted projects can be demoed for under $5 total.
 2. **Use B-series VMs** — Project 04 uses D2s_v3 ($0.096/hr). Switching to B2s ($0.042/hr) saves 56%.
 3. **AKS Free Tier** — Projects 10 and 11 use Free tier. No control plane charge.
 4. **Front Door Standard vs Premium** — Standard is $35/mo vs Premium at $330/mo. Project 11 requires Premium for Private Link.
