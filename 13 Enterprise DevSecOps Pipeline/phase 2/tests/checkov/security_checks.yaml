@@ -1,0 +1,33 @@
+# Checkov Custom Policy - Security Module (Key Vault)
+# Property 2: Security Configuration Compliance
+# Validates: Requirements 4.2, 4.3
+#
+# Verifies Key Vault has:
+# - Soft delete enabled with retention >= 7 days
+# - Purge protection enabled
+# - RBAC authorization enabled
+
+metadata:
+  name: "Security Module - Key Vault Configuration Compliance"
+  guidelines: "Ensure Key Vault follows security best practices for data protection and access control"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_key_vault"
+      attribute: "soft_delete_retention_days"
+      operator: "greater_than_or_equal"
+      value: 7
+
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_key_vault"
+      attribute: "purge_protection_enabled"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_key_vault"
+      attribute: "enable_rbac_authorization"
+      operator: "is_true"

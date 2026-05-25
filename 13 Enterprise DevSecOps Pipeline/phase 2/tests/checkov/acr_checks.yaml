@@ -1,0 +1,26 @@
+# Checkov Custom Policy: ACR Security Configuration Compliance
+# Property 2: Security Configuration Compliance
+# Validates: Requirements 3.2 — ACR has public network access disabled and admin user disabled
+
+metadata:
+  name: "ACR Security Configuration Compliance"
+  id: "CUSTOM_ACR_001"
+  category: "NETWORKING"
+
+scope:
+  provider: "azure"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_container_registry"
+      attribute: "public_network_access_enabled"
+      operator: "equals"
+      value: "false"
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_container_registry"
+      attribute: "admin_enabled"
+      operator: "equals"
+      value: "false"

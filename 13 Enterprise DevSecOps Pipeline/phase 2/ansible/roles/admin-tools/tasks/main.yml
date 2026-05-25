@@ -1,0 +1,49 @@
+---
+# Admin Tools Installation Role
+# Installs kubectl, Azure CLI, and helm on the Windows jumpbox
+# Requirements: 6.6
+
+# --- kubectl Installation ---
+- name: Install kubectl using Chocolatey
+  win_chocolatey:
+    name: kubernetes-cli
+    state: present
+
+- name: Verify kubectl is executable
+  win_command: kubectl version --client
+  register: kubectl_version
+  changed_when: false
+
+- name: Display kubectl version
+  debug:
+    var: kubectl_version.stdout_lines
+
+# --- Azure CLI Installation ---
+- name: Install Azure CLI using Chocolatey
+  win_chocolatey:
+    name: azure-cli
+    state: present
+
+- name: Verify Azure CLI is executable
+  win_command: az version
+  register: az_version
+  changed_when: false
+
+- name: Display Azure CLI version
+  debug:
+    var: az_version.stdout_lines
+
+# --- Helm Installation ---
+- name: Install helm using Chocolatey
+  win_chocolatey:
+    name: kubernetes-helm
+    state: present
+
+- name: Verify helm is executable
+  win_command: helm version
+  register: helm_version
+  changed_when: false
+
+- name: Display helm version
+  debug:
+    var: helm_version.stdout_lines

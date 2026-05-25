@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "README Update Reminder",
+  "description": "After completing a spec task, reminds to update the project README with documentation requirements from the steering file.",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Remind me: Have I updated the README.md with the latest architecture, tools & skills table, cost estimation, and time estimation? If not, do it now."
+  }
+}

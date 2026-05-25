@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Terraform Validate on Save",
+  "description": "Runs terraform validate whenever a .tf file is saved to catch syntax and configuration errors immediately.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.tf"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "terraform validate"
+  }
+}

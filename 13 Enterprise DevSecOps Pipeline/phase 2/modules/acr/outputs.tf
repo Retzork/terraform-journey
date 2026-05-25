@@ -1,0 +1,23 @@
+# =============================================================================
+# ACR Module - Outputs
+# =============================================================================
+
+output "acr_id" {
+  description = "The ID of the Azure Container Registry"
+  value       = azurerm_container_registry.this.id
+}
+
+output "acr_name" {
+  description = "The name of the Azure Container Registry"
+  value       = azurerm_container_registry.this.name
+}
+
+output "acr_login_server" {
+  description = "The login server URL of the Azure Container Registry"
+  value       = azurerm_container_registry.this.login_server
+}
+
+output "private_endpoint_id" {
+  description = "The ID of the ACR private endpoint"
+  value       = azurerm_private_endpoint.acr.id
+}

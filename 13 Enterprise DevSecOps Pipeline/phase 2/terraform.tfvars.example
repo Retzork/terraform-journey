@@ -1,0 +1,99 @@
+# =============================================================================
+# DevSecOps Phase 2 - Infrastructure Variables Template
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in your values.
+# Do NOT commit terraform.tfvars to source control.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# General Configuration
+# -----------------------------------------------------------------------------
+
+# Environment identifier used in resource naming (e.g., dev, staging, prod)
+environment = "dev"
+
+# Azure region where all resources will be deployed
+location = "southeastasia"
+
+# Project prefix used in resource naming conventions (e.g., rg-{project}-{env})
+project_name = "devsecops"
+
+# -----------------------------------------------------------------------------
+# Network Configuration
+# -----------------------------------------------------------------------------
+
+# Address space for the Virtual Network (CIDR block between /8 and /24)
+vnet_address_space = ["10.0.0.0/16"]
+
+# CIDR range for the AKS node subnet (snet-aks) - must fall within VNet address space
+aks_subnet_cidr = "10.0.1.0/24"
+
+# CIDR range for the application subnet (snet-app) - must fall within VNet address space
+app_subnet_cidr = "10.0.2.0/24"
+
+# CIDR range for the management subnet (snet-mgmt) - must fall within VNet address space
+management_subnet_cidr = "10.0.3.0/24"
+
+# -----------------------------------------------------------------------------
+# AKS (Azure Kubernetes Service) Configuration
+# -----------------------------------------------------------------------------
+
+# Kubernetes version for the AKS cluster
+aks_kubernetes_version = "1.28"
+
+# Number of nodes in the AKS default node pool
+aks_node_count = 2
+
+# VM size for AKS default node pool nodes
+aks_node_vm_size = "Standard_D2s_v3"
+
+# DNS prefix for the AKS cluster (must be globally unique)
+aks_dns_prefix = "devsecops-aks"
+
+# List of IP ranges authorized to access the AKS API server (CIDR notation)
+# Include jumpbox public IP and CI/CD runner IPs
+aks_api_authorized_ips = ["<YOUR_JUMPBOX_PUBLIC_IP>/32", "<YOUR_RUNNER_IP>/32"]
+
+# -----------------------------------------------------------------------------
+# ACR (Azure Container Registry) Configuration
+# -----------------------------------------------------------------------------
+
+# SKU for the Azure Container Registry (Premium required for private endpoint)
+acr_sku = "Premium"
+
+# -----------------------------------------------------------------------------
+# Jumpbox (Compute) Configuration
+# -----------------------------------------------------------------------------
+
+# VM size for the jumpbox virtual machine
+vm_size = "Standard_B2s_v2"
+
+# Admin username for the jumpbox VM
+vm_admin_username = "azureadmin"
+
+# Admin password for the jumpbox VM
+# Set via TF_VAR_vm_admin_password environment variable
+# Must be at least 12 characters with uppercase, lowercase, digit, and special character
+# DO NOT set this value in this file - use: export TF_VAR_vm_admin_password="<secure-password>"
+
+# List of IP addresses allowed to RDP to the jumpbox (CIDR notation)
+# At least one source IP is required
+allowed_rdp_source_ips = ["<YOUR_IP_ADDRESS>/32"]
+
+# -----------------------------------------------------------------------------
+# Security Configuration
+# -----------------------------------------------------------------------------
+
+# List of Azure AD object IDs granted Key Vault Secrets Officer access
+# Include your Service Principal and jumpbox Managed Identity object IDs
+key_vault_admin_object_ids = ["<SERVICE_PRINCIPAL_OBJECT_ID>", "<JUMPBOX_MI_OBJECT_ID>"]
+
+# -----------------------------------------------------------------------------
+# Additional Tags
+# -----------------------------------------------------------------------------
+
+# Additional tags to apply to all resources (project and environment tags are added automatically)
+tags = {
+  managed_by = "terraform"
+  phase      = "2"
+}

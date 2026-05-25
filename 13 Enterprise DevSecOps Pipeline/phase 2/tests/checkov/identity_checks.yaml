@@ -1,0 +1,72 @@
+# -----------------------------------------------------------------------------
+# Checkov Custom Policy: Identity Module Security Properties
+# Validates: Requirements 5.2, 5.3, 5.4
+# -----------------------------------------------------------------------------
+# Property 3: Least Privilege Scoping — Verify all role assignments are scoped
+#             to specific resources, not resource group or subscription level
+# -----------------------------------------------------------------------------
+# Azure resource ID hierarchy:
+#   Subscription: /subscriptions/{id}
+#   Resource Group: /subscriptions/{id}/resourceGroups/{name}
+#   Resource: /subscriptions/{id}/resourceGroups/{name}/providers/{ns}/{type}/{name}
+#
+# A scope containing "/providers/" indicates resource-level scoping (least privilege).
+# -----------------------------------------------------------------------------
+
+metadata:
+  name: "Identity Module Security Checks"
+  description: "Custom Checkov policies for Phase 2 Identity Module - Least Privilege Scoping"
+  category: "IAM"
+
+---
+# =============================================================================
+# Property 3: Least Privilege Scoping
+# =============================================================================
+
+# Check 3.1: Role assignments must be scoped to specific resources
+# Validates: Requirement 5.4 — Role assignments SHALL be scoped to specific
+#            target resources rather than resource group or subscription level
+metadata:
+  id: "CKV2_CUSTOM_IDENTITY_1"
+  name: "Ensure role assignments are scoped to specific resources not subscription or resource group level"
+  category: "IAM"
+  guideline: "All role assignments must reference a specific resource ID (containing /providers/) in their scope, not a subscription or resource group level scope"
+
+scope:
+  provider: "azure"
+
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "azurerm_role_assignment"
+  attribute: "scope"
+  operator: "contains"
+  value: "/providers/"
+
+---
+# Check 3.2: Role assignments must use only AcrPull or Key Vault Secrets User roles
+# Validates: Requirements 5.2, 5.3 — The Identity Module SHALL assign only
+#            AcrPull (scoped to ACR) and Key Vault Secrets User (scoped to Key Vault)
+metadata:
+  id: "CKV2_CUSTOM_IDENTITY_2"
+  name: "Ensure role assignments use only least-privilege roles AcrPull or Key Vault Secrets User"
+  category: "IAM"
+  guideline: "The managed identity must only be assigned AcrPull and Key Vault Secrets User roles to enforce least-privilege access"
+
+scope:
+  provider: "azure"
+
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_role_assignment"
+      attribute: "role_definition_name"
+      operator: "equals"
+      value: "AcrPull"
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_role_assignment"
+      attribute: "role_definition_name"
+      operator: "equals"
+      value: "Key Vault Secrets User"

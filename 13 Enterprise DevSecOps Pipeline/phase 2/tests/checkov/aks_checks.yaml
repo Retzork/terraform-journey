@@ -1,0 +1,32 @@
+# Checkov Custom Policy - AKS Module
+# Property 2: Security Configuration Compliance
+# Validates: Requirements 2.3, 2.5, 2.6
+#
+# Verifies AKS cluster has:
+# - RBAC enabled (role_based_access_control_enabled = true)
+# - Local accounts disabled (local_account_disabled = true)
+# - OMS agent logging enabled (oms_agent configuration present)
+
+metadata:
+  name: "AKS Module - Security Configuration Compliance"
+  guidelines: "Ensure AKS cluster enforces RBAC, disables local accounts, and enables OMS agent logging"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_kubernetes_cluster"
+      attribute: "role_based_access_control_enabled"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_kubernetes_cluster"
+      attribute: "local_account_disabled"
+      operator: "is_true"
+
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_kubernetes_cluster"
+      attribute: "oms_agent"
+      operator: "exists"

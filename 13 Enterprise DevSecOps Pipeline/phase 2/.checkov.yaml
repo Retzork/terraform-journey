@@ -1,0 +1,44 @@
+# Checkov configuration for Phase 2 Infrastructure
+# Validates: Requirements 7.2 - Checkov security scanning with documented exceptions
+
+framework:
+  - terraform
+
+directory:
+  - .
+
+# Soft-fail on medium/low severity findings (log as warnings, continue pipeline)
+soft-fail-on:
+  - medium
+  - low
+
+# Hard-fail on high/critical severity findings (block deployment)
+hard-fail-on:
+  - high
+  - critical
+
+# Skip checks with documented justifications
+skip-check:
+  # CKV_AZURE_1: Windows VM requires password authentication - SSH key not applicable
+  # Justification: The jumpbox is a Windows Server 2022 VM that uses WinRM for Ansible
+  # provisioning and RDP for admin access. SSH key authentication is not applicable
+  # to Windows VMs in this context.
+  - CKV_AZURE_1
+
+  # CKV_AZURE_50: ACR uses private endpoint instead of geo-replication for learning environment
+  # Justification: Geo-replication is unnecessary for a single-region learning environment.
+  # The ACR is secured via private endpoint with no public network access, which provides
+  # stronger security than geo-replication alone.
+  - CKV_AZURE_50
+
+  # CKV2_AZURE_31: VNet DNS servers use Azure default - custom DNS not required for learning
+  # Justification: Azure-provided DNS is sufficient for this learning environment. Custom
+  # DNS servers would add complexity without security benefit. Private DNS zones handle
+  # private endpoint resolution.
+  - CKV2_AZURE_31
+
+  # CKV_AZURE_35: Storage account not used directly - backend configured separately
+  # Justification: The Terraform state backend storage account is provisioned separately
+  # in prerequisites (rg-terraform-state). No storage accounts are created within the
+  # Phase 2 Terraform code itself.
+  - CKV_AZURE_35

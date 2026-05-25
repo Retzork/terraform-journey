@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Terraform Format on Save",
+  "description": "Runs terraform fmt whenever a .tf file is saved to ensure consistent formatting across all Terraform files.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.tf"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "terraform fmt -diff"
+  }
+}

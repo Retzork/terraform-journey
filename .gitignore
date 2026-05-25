@@ -12,6 +12,7 @@ crash.*.log
 # Exclude all .tfvars files
 *.tfvars
 *.tfvars.json
+!terraform.tfvars.example
 
 # Ignore override files
 override.tf
@@ -22,6 +23,12 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Terraform plan files
+*.tfplan
+
+# Ansible rendered inventory (contains passwords)
+ansible/inventory/hosts.yml
 
 # ignore deprecated project das sad asda
 06\ Whole\ Dynamics\ GP\ Environment/

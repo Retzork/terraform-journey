@@ -1,0 +1,11 @@
+---
+# Jumpbox Configuration Playbook
+# Configures the Windows jumpbox with admin tools and CIS hardening
+# Requirements: 6.5, 6.6, 6.7
+
+- name: Configure jumpbox with admin tools and CIS hardening
+  hosts: jumpbox
+  gather_facts: yes
+  roles:
+    - admin-tools
+    - cis-hardening

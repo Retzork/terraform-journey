@@ -1,0 +1,173 @@
+# -----------------------------------------------------------------------------
+# Checkov Custom Policy: Network Module Security Properties
+# Validates: Requirements 1.3, 6.3, 10.1, 10.2
+# -----------------------------------------------------------------------------
+# Property 1: Network Isolation — Verify all subnets have associated NSGs
+#             with deny-all inbound rules
+# Property 10: Resource Metadata Compliance — Verify naming convention and
+#              mandatory tags
+# -----------------------------------------------------------------------------
+
+metadata:
+  name: "Network Module Security Checks"
+  description: "Custom Checkov policies for Phase 2 Network Module"
+  category: "networking"
+
+---
+# =============================================================================
+# Property 1: Network Isolation
+# =============================================================================
+
+# Check 1.1: All NSGs must have a deny-all inbound rule
+# Validates: Requirement 1.3 — NSGs SHALL have deny-all inbound rule at priority 4096
+metadata:
+  id: "CKV2_CUSTOM_NETWORK_1"
+  name: "Ensure all NSGs have a deny-all inbound rule"
+  category: "networking"
+  guideline: "All Network Security Groups must include a deny-all inbound rule at priority 4096 to enforce least-privilege network access"
+
+scope:
+  provider: "azure"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_network_security_group"
+      attribute: "security_rule"
+      operator: "exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_network_security_group"
+      attribute: "security_rule.access"
+      operator: "contains"
+      value: "Deny"
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_network_security_group"
+      attribute: "security_rule.direction"
+      operator: "contains"
+      value: "Inbound"
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_network_security_group"
+      attribute: "security_rule.protocol"
+      operator: "contains"
+      value: "*"
+
+---
+# Check 1.2: All subnets must have NSG associations
+# Validates: Requirement 1.3 — Subnets SHALL have associated NSGs
+metadata:
+  id: "CKV2_CUSTOM_NETWORK_2"
+  name: "Ensure all subnets have NSG associations via separate resources"
+  category: "networking"
+  guideline: "All subnets must be associated with a Network Security Group using azurerm_subnet_network_security_group_association resources"
+
+scope:
+  provider: "azure"
+
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "azurerm_subnet_network_security_group_association"
+  attribute: "network_security_group_id"
+  operator: "exists"
+
+---
+# =============================================================================
+# Property 10: Resource Metadata Compliance — Naming Convention
+# =============================================================================
+
+# Check 10.1: VNet naming convention compliance
+# Validates: Requirement 10.1 — Resources SHALL follow naming pattern vnet-{project}-{env}
+metadata:
+  id: "CKV2_CUSTOM_NETWORK_3"
+  name: "Ensure VNet follows naming convention vnet-{project}-{env}"
+  category: "convention"
+  guideline: "Virtual Networks must follow the naming pattern: vnet-{project}-{env}"
+
+scope:
+  provider: "azure"
+
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "azurerm_virtual_network"
+  attribute: "name"
+  operator: "regex_match"
+  value: "^vnet-[a-z0-9]+-[a-z0-9]+$"
+
+---
+# Check 10.2: NSG naming convention compliance
+# Validates: Requirement 10.1 — Resources SHALL follow naming pattern nsg-{subnet}-{project}-{env}
+metadata:
+  id: "CKV2_CUSTOM_NETWORK_4"
+  name: "Ensure NSGs follow naming convention nsg-{purpose}-{project}-{env}"
+  category: "convention"
+  guideline: "Network Security Groups must follow the naming pattern: nsg-{purpose}-{project}-{env}"
+
+scope:
+  provider: "azure"
+
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "azurerm_network_security_group"
+  attribute: "name"
+  operator: "regex_match"
+  value: "^nsg-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+$"
+
+---
+# =============================================================================
+# Property 10: Resource Metadata Compliance — Mandatory Tags
+# =============================================================================
+
+# Check 10.3: VNet must have mandatory tags (project, environment)
+# Validates: Requirement 10.2 — All resources SHALL have project and environment tags
+metadata:
+  id: "CKV2_CUSTOM_NETWORK_5"
+  name: "Ensure VNet has mandatory tags (project, environment)"
+  category: "convention"
+  guideline: "All taggable resources must include 'project' and 'environment' tags"
+
+scope:
+  provider: "azure"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_virtual_network"
+      attribute: "tags.project"
+      operator: "exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_virtual_network"
+      attribute: "tags.environment"
+      operator: "exists"
+
+---
+# Check 10.4: NSGs must have mandatory tags (project, environment)
+# Validates: Requirement 10.2 — All resources SHALL have project and environment tags
+metadata:
+  id: "CKV2_CUSTOM_NETWORK_6"
+  name: "Ensure NSGs have mandatory tags (project, environment)"
+  category: "convention"
+  guideline: "All taggable resources must include 'project' and 'environment' tags"
+
+scope:
+  provider: "azure"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_network_security_group"
+      attribute: "tags.project"
+      operator: "exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "azurerm_network_security_group"
+      attribute: "tags.environment"
+      operator: "exists"
